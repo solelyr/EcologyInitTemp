@@ -59,6 +59,7 @@ public class RequestInfoUtil {
                     requestInfo.setRequestid(requestId);
                     requestInfo.setLastoperator(Util.null2String(userId));
                     requestInfo.setCreatorid(Util.null2String(createrId));
+                    requestInfo.setIspreadd("1");
                     rs.isReturnDecryptData(true);
                     sql = "select * from " + tableName + " where requestId = ?";
                     rs.executeQuery(sql, requestId);
@@ -124,6 +125,7 @@ public class RequestInfoUtil {
                                 cell.setName(fieldName);
                                 cell.setValue(value);
                                 cell.setType(fieldDbType);
+                                cell.setCol1(fieldname_value);
                                 cellsList.add(cell);
                             }
 
