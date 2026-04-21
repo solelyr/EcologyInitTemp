@@ -6,12 +6,12 @@ import com.engine.solelyr.common.utils.RequestInfoUtil;
 import com.engine.solelyr.common.utils.WorkflowUtil;
 import weaver.conn.RecordSet;
 import weaver.formmode.customjavacode.AbstractModeExpandJavaCodeNew;
-import weaver.general.BaseBean;
-import weaver.general.StaticObj;
-import weaver.general.Util;
+import weaver.formmode.interfaces.action.WorkflowToMode;
+import weaver.general.*;
 import weaver.hrm.User;
 import weaver.interfaces.workflow.action.Action;
 import weaver.soa.workflow.request.RequestInfo;
+import weaver.workflow.action.ActionLogService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,19 +47,19 @@ public class ModeWorkflowAction extends AbstractModeExpandJavaCodeNew {
                     //------请在下面编写业务逻辑代码------
                     Map<String,Object> mainData = WorkflowUtil.getMainData(requestInfo);
                     String zdlc = Util.null2String(mainData.get("zdlc")) ; // 指定的流程
-                    String jkdz = Util.null2String(mainData.get("jkdz")) ; // 接口动作
-                    WorkflowActionSet workflowActionSet = new WorkflowActionSetDao().selectById(jkdz);
-//                    ActionSetting actionSetting = new ActionSettingDao().selectByName(workflowActionSet.getInterfaceId());
-                    Action action = (Action)StaticObj.getServiceByFullname("action."+workflowActionSet.getInterfaceId(), Action.class);
+                    String interfaceId = Util.null2String(mainData.get("jkdz")) ; // 接口动作
+                    String nodeId = Util.null2String(mainData.get("nodeid")) ;
+                    String linkId = Util.null2String(mainData.get("nodelinkid")) ;
+                    WorkflowActionSet workflowActionSet = new WorkflowActionSetDao().selectById(interfaceId);
                     RequestInfoUtil requestInfoUtil = new RequestInfoUtil();
                     RequestInfo reqInfo = requestInfoUtil.getRequestInfo(zdlc);
-                    String s = action.execute(reqInfo);
+                    String s = doAction(interfaceId ,nodeId,linkId,workflowActionSet, reqInfo);
                     String message = Util.null2String(reqInfo.getRequestManager().getMessagecontent());
                     String sql = "update uf_lczdyjk set zxjg = ?,xxms = ? where id = ?";
                     RecordSet rs = new RecordSet();
                     rs.executeUpdate(sql,s,message,billid);
                     log.writeLog("手动执行指定接口执行===>");
-                    log.writeLog("流程id："+zdlc+"，接口动作："+jkdz);
+                    log.writeLog("流程id："+zdlc+"，接口动作："+interfaceId);
                     log.writeLog("执行结果："+("0".equals(s) ? "失败" : "成功") + "，描述信息："+message);
                 }
             }
@@ -70,4 +70,34 @@ public class ModeWorkflowAction extends AbstractModeExpandJavaCodeNew {
         return result;
     }
 
+    private String doAction(String interfaceId,String nodeId,String linkId,WorkflowActionSet workflowActionSet,RequestInfo reqInfo){
+        int type = workflowActionSet.getInterfaceType();
+        String actionId = workflowActionSet.getInterfaceId();
+        ActionLogService actionlogservice = new ActionLogService();
+        try {
+            if (type == 3){
+                if(actionId.equals("WorkflowToDoc")) {
+                    String dateTime = TimeUtil.getCurrentTimeString();
+                    String date = dateTime.substring(0, 10);
+                    String time = dateTime.substring(11);
+                    return Util.null2String(actionlogservice.saveNew(actionId, type + "", Util.null2String(InitServer.getRealIp().get(0)), date, time, date, time, 0));
+                }else {
+                    if(actionId.equals("WorkflowToMode")) {
+                        WorkflowToMode workflowToMode = new WorkflowToMode();
+                        workflowToMode.setActionid(Util.getIntValue(interfaceId));
+                        workflowToMode.setNodeid(Util.getIntValue(nodeId));
+                        workflowToMode.setNodelinkid(Util.getIntValue(linkId));
+                        return workflowToMode.execute(reqInfo);
+                    }else {
+                        Action action = (Action)StaticObj.getServiceByFullname("action."+workflowActionSet.getInterfaceId(), Action.class);
+                        return action.execute(reqInfo);
+                    }
+                }
+            }
+            return "0";
+        }catch (Exception e) {
+            e.printStackTrace();
+            return "1";
+        }
+    }
 }

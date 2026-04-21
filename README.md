@@ -53,7 +53,7 @@ log4j.appender.autoLinkLog.layout.ConversionPattern=%d{yyyy-MM-dd HH\:mm\:ss,SSS
 log4j.additivity.autoLinkLog=false
 
 ###### 7.部署至客户环境
-- out/custom 目录，执行jar -cvf solelyr-ecology.1.0.1.jar ./com/  生成对应的jar包,将jar包拷贝到指定环境
+- out/custom 目录，执行 jar -cvf solelyr-ecology.1.0.1.jar ./com/  生成对应的jar包,将jar包拷贝到指定环境
 
 #### OA不启动服务测试方案 在main方法中增加以下内容
 String rootPath = 当前项目路径+"\\web\\";
