@@ -11,7 +11,7 @@ public class RecordSetTest extends BaseTest {
     @Test
     public void select() {
         RecordSet rs  = new RecordSet();
-        String sql = "select id,lastname from hrmresource";
+        String sql = "select id,lastname from hrmresource where id = (select max(id) from hrmresource)";
         rs.executeQuery(sql);
         while (rs.next()) {
             Map<String,Object> map = new HashMap<>();

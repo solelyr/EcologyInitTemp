@@ -20,7 +20,7 @@ OA服务器运维脚本[查看](http://note.youdao.com/s/JhfblPlf)
 * 提供git导入的方式创建
 * 从零搭建，也只需要新建一个空的web项目即可，不需要引入任何框架。
 * ###### 2.设置web目录
-在com.customization.test.BaseTest.java文件中设置项目所在的物理目录(主要是放置配置文件和日志打印的目录)
+    建议在com.engine在设置自定义的项目目录
 ###### 3.拷贝必要的jar包依赖
     这个很重要，需要有客户环境的KB补丁包保持一致
 - 进入服务器上的/weaver/ecology/classbean目录，执行jar -cvf local-ecology.jar ./  生成对应的jar包,将jar包拷贝到本地项目中
@@ -56,6 +56,11 @@ log4j.additivity.autoLinkLog=false
 - out/custom 目录，执行 jar -cvf solelyr-ecology.1.0.1.jar ./com/  生成对应的jar包,将jar包拷贝到指定环境
 
 #### OA不启动服务测试方案 在main方法中增加以下内容
-String rootPath = 当前项目路径+"\\web\\";
-GCONST.setRootPath(rootPath);
-GCONST.setServerName("ecology");
+- 复制OA服务器上数据库配置文件：xxx\ecology\WEB-INF\prop\weaver.properties 文件至项目路径web\WEB-INF\prop路径下，请注意该文件不要提交到git，避免数据库信息泄露。
+- 执行RecordSetTest测试是否能正常输出结果，自定义的test类必须要继承BaseTest类。
+- 如不继承BaseTest类则可通过在main方法中增加以下内容：
+  ```
+    GCONST.setServerName("ecology");
+    String fileSeparator = File.separator;
+    GCONST.setRootPath(System.getProperty("user.dir")+fileSeparator+"web"+fileSeparator);
+  ```rverName("ecology");
